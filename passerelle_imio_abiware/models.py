@@ -1,3 +1,5 @@
+import json
+
 import requests
 from django.db import models
 from passerelle.base.models import BaseResource
@@ -41,6 +43,9 @@ class ConnectorAbiware(BaseResource):
         verbose_name="Mot de passe",
         help_text="Mot de passe pour la connexion OAuth2",
     )
+
+    api_description = "Connecteur permettant d'intéragir avec la plateforme AbiWare"
+    category = "Connecteurs iMio"
 
     class Meta:
         verbose_name = "Connecteur pour la plateforme Abiware"
@@ -89,8 +94,10 @@ class ConnectorAbiware(BaseResource):
                 return False
 
         token = self.get_token()["access_token"]
+        self.logger.info(token)
         headers = {
-            "Authorization": f"Bearer {token}"
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
         }
 
         server_api_url = "https://testdossierconnector.abicloud.be/api/"
@@ -104,8 +111,10 @@ class ConnectorAbiware(BaseResource):
         post_data = json.loads(request.body)
 
         general = {key: value for key, value in post_data.items() if key in general_fields}
+        self.logger.info(f"GENERAL DATA {general}")
 
         dossier_data = {key: value for key, value in post_data.items() if key in dossier_fields}
+        self.logger.info(f"DOSSIER DATA {dossier_data}")
         dossier_data_split = dossier_data[dossier_fields[0]].split(" || ")
         dossier = {}
         if check_params(dossier_data_split, 0):
@@ -128,6 +137,7 @@ class ConnectorAbiware(BaseResource):
             dossier["latitude"] = dossier_data_split[8].replace(".", ",")
 
         user_request_data = {key: value for key, value in post_data.items() if key in user_request_fields}
+        self.logger.info(f"USER REQUEST DATA {user_request_data}")
         user_request_data_split = user_request_data[user_request_fields[0]].split(" || ")
         user_request = {}
         if check_params(user_request_data_split, 0):
@@ -141,10 +151,11 @@ class ConnectorAbiware(BaseResource):
         if check_params(user_request_data_split, 4):
             user_request["remarks"] = user_request_data_split[4]
         if check_params(user_request_data_split, 5):
-            user_request["invoiceAddres"] = user_request_data_split[5]
+            user_request["invoiceAddresType"] = user_request_data_split[5]
 
         contacts = []
         contacts_data = {key: value for key, value in post_data.items() if key in contacts_fields}
+        self.logger.info(f"CONTACT DATA {contacts_data}")
         for key, value in contacts_data.items():
             contact = {}
             contact_data_split = value.split(" || ")
@@ -181,10 +192,12 @@ class ConnectorAbiware(BaseResource):
         data["dossier"] = dossier
         data["request"] = user_request
         data["contacts"] = contacts
-        self.logger.info(data)
-        self.logger.info(json.dumps(data))
+        self.logger.info(f"POST DATA {data}")
 
         response = requests.post(url=url, headers=headers, data=json.dumps(data))
         response.raise_for_status()
-
-        return response.json()
+        try:
+            result = response.json()
+        except:
+            result = "Erreur lors de la réponse .json()"
+        return result
