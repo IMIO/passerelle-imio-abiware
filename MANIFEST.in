@@ -1,4 +1,3 @@
 recursive-include passerelle_imio_abiware/*
 include MANIFEST.in
-include VERSION
 include README
