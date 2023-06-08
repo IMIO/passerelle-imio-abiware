@@ -5,7 +5,7 @@ from setuptools import setup
 version = "0.0.0"
 
 setup(
-    name='passerelle-imio-abiware',
+    name="passerelle-imio-abiware",
     version=version,
     author="iMio",
     author_email="support-ts@imio.be",
@@ -18,7 +18,7 @@ setup(
     ],
     url="https://github.com/IMIO/passerelle-imio-abiware",
     install_requires=[
-        "django>=2.2",
+        "django>=3.2, <3.3",
     ],
     zip_safe=False,
 )
