@@ -1,0 +1,27 @@
+name: Deb build push notify
+on: 
+  push:
+    branches:
+      - main
+    workflow_dispatch:
+
+jobs:
+  deb:
+    runs-on:
+      group: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set package version variable
+        run: |
+          $(echo $(cat setup.py | grep "version =" | cut -d '"' -f 2 && echo "-" && echo ${{ github.sha::7 }}) | tr -d [:space:]) >> $VERSION
+      - name: Deb build push and notify
+        uses: IMIO/gha/deb-build-push-notify@main
+        with:
+          REPOSITORY_URL: ${{ secrets.NEXUS_BOOKWORM_URL }}
+          REPOSITORY_LOGIN: ${{ secrets.NEXUS_LOGIN }}
+          REPOSITORY_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          PACKAGE_NAME: passerelle-imio-abiware
+          PACKAGE_VERSION: ${{ env.VERSION }}
+          SIGNER_PASSPHRASE: ${{ secrets.SIGNER_PASSPHRASE }}
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.TELESERVICES_MATTERMOST_WEBHOOK_URL }}
