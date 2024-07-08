@@ -1,5 +1,5 @@
 name: Deb build push notify
-on: 
+on:
   push:
     branches:
       - main
@@ -24,5 +24,6 @@ jobs:
           REPOSITORY_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           PACKAGE_NAME: passerelle-imio-abiware
           PACKAGE_VERSION: ${{ env.VERSION }}
-          SIGNER_PASSPHRASE: ${{ secrets.SIGNER_PASSPHRASE }}
+          SIGNER_KEY_PASSPHRASE: ${{ secrets.DEB_SIGNER_PASSPHRASE }}
+          SIGNER_KEY: ${{ secrets.DEB_SIGNER_KEY }}
           MATTERMOST_WEBHOOK_URL: ${{ secrets.TELESERVICES_MATTERMOST_WEBHOOK_URL }}
